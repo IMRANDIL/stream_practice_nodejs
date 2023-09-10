@@ -1,3 +1,4 @@
+
 const fs = require('node:fs/promises');
 const { Worker, isMainThread, parentPort, workerData } = require('node:worker_threads');
 
@@ -7,10 +8,12 @@ const numWorkers = 4; // Adjust this based on your CPU cores
 
 (async () => {
   if (isMainThread) {
-    console.time('process');
     const fileHandle = await fs.open('test.txt', 'w');
     const workers = [];
     let recordsWritten = 0;
+    let workerCount = 0;
+
+    console.time('process'); // Start measuring execution time
 
     for (let i = 0; i < numWorkers; i++) {
       const start = i * (totalRecords / numWorkers);
@@ -20,10 +23,11 @@ const numWorkers = 4; // Adjust this based on your CPU cores
 
     for (const worker of workers) {
       worker.on('message', () => {
-        recordsWritten += batchSize;
-        if (recordsWritten >= totalRecords) {
+        workerCount++;
+        if (workerCount === numWorkers) {
+          // All workers have finished
           fileHandle.close().then(() => {
-            console.timeEnd('process');
+            console.timeEnd('process'); // End measuring execution time
           });
         }
       });
@@ -44,7 +48,3 @@ const numWorkers = 4; // Adjust this based on your CPU cores
     parentPort.postMessage('done');
   }
 })();
-
-
-
-
