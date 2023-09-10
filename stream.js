@@ -13,17 +13,39 @@
 // })()
 
 
-const fs = require('fs');
+// const fs = require('fs');
 
 
-(async()=>{
+// (async()=>{
 
-fs.open('test.txt', 'w', (err, fd)=>{
-    console.time('process')
-for(let i = 0; i<1000000; i++){
-    fs.writeSync(fd, `${i} `)
+// fs.open('test.txt', 'w', (err, fd)=>{
+//     console.time('process')
+// for(let i = 0; i<1000000; i++){
+//     fs.writeSync(fd, `${i} `)
+// }
+// console.timeEnd('process')
+// })
+
+// })()
+
+
+//streams starts now>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+const fs = require('node:fs/promises');
+
+
+
+(async()=>{   
+const fileHandle = await fs.open('test.txt', 'w');
+
+const stream = fileHandle.createWriteStream();
+
+console.time('process')
+for(let i=0; i<1000000; i++){
+    const buff = Buffer.from(` ${i} `, 'utf-8')
+    stream.write(buff)
+    
 }
 console.timeEnd('process')
-})
 
 })()
