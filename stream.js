@@ -29,23 +29,81 @@
 // })()
 
 
-//streams starts now>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+
+//streams gpt way>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
 
 const fs = require('node:fs/promises');
 
+let i = 0;
+const totalRecords = 1000000;
+const batchSize = 10000; // Adjust this as needed
+
+const writeStream = async (stream) => {
+  while (i < totalRecords) {
+    for (let j = 0; j < batchSize && i < totalRecords; j++) {
+      const buff = Buffer.from(` ${i} `, 'utf-8');
+      i++;
+      if (!stream.write(buff)) {
+        // If the stream is not writable, pause and wait for 'drain' event
+        await new Promise((resolve) => stream.once('drain', resolve));
+      }
+    }
+  }
+};
+
+(async () => {
+  console.time('process');
+  const fileHandle = await fs.open('test.txt', 'w');
+  const stream = fileHandle.createWriteStream();
+
+  stream.on('finish', () => {
+    console.timeEnd('process');
+    fileHandle.close()
+  });
+
+  await writeStream(stream);
+  stream.end(); // Close the stream when done writing
+})();
 
 
-(async()=>{   
-const fileHandle = await fs.open('test.txt', 'w');
 
-const stream = fileHandle.createWriteStream();
 
-console.time('process')
-for(let i=0; i<1000000; i++){
-    const buff = Buffer.from(` ${i} `, 'utf-8')
-    stream.write(buff)
-    
-}
-console.timeEnd('process')
 
-})()
+//streams starts now>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+// const fs = require('node:fs/promises');
+
+// let i =0;
+
+// const writeStream = ()=>{
+//     while( i<1000000){
+//         const buff = Buffer.from(` ${i} `, 'utf-8');
+
+//         i++;
+//         if(!stream.write(buff)) break;
+//         stream.write(buff)
+        
+//     }
+// }
+
+
+
+// (async()=>{   
+//     console.time('process')
+// const fileHandle = await fs.open('test.txt', 'w');
+
+// const stream = fileHandle.createWriteStream();
+
+
+// stream.on('drain', ()=>{
+//     writeStream()
+// })
+
+// stream.on('finish', ()=>{
+//     console.timeEnd('process')
+// })
+
+
+// })()
